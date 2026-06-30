@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Quote of the Day — ISM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=Newsreader:ital,wght@0,400;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-deep:#04201d;
+    --ink-base:#0a3530;
+    --ink-light:#11534a;
+    --vellum:#f5ecd9;
+    --vellum-dim:#a9c2bc;
+    --brass:#d4a953;
+    --brass-bright:#f3cf8e;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  html{ background:var(--ink-deep); }
+  body{
+    font-family:'Manrope', system-ui, sans-serif;
+    color:var(--vellum);
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .banner{
+    position:relative;
+    width:100%;
+    overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(125deg, var(--ink-base), var(--ink-deep) 75%);
+  }
+  @media (min-width:720px){ .banner{ aspect-ratio:1920/300; } }
+  @media (max-width:719px){ .banner{ min-height:240px; padding:32px 16px; } }
+
+  .banner::before,
+  .banner::after{ content:''; position:absolute; pointer-events:none; }
+  .banner::before{
+    width:130%; height:55%; left:-12%; top:-22%;
+    background:linear-gradient(100deg, var(--ink-light), transparent 65%);
+    opacity:.55; transform:rotate(-6deg);
+  }
+  .banner::after{
+    width:120%; height:50%; right:-10%; bottom:-26%;
+    background:linear-gradient(280deg, var(--brass), transparent 70%);
+    opacity:.10; transform:rotate(5deg);
+  }
+
+  .sparkle-field{ position:absolute; inset:0; pointer-events:none; z-index:0; }
+  .amb{
+    position:absolute; width:4px; height:4px; border-radius:50%;
+    background:var(--brass-bright);
+    box-shadow:0 0 6px 1px rgba(243,207,142,.6);
+    opacity:.18;
+    animation: amb-twinkle 3.4s ease-in-out infinite;
+  }
+  @keyframes amb-twinkle{
+    0%,100%{ opacity:.12; transform:scale(.75); }
+    50%{ opacity:.6; transform:scale(1.05); }
+  }
+
+  .stage{
+    position:relative; z-index:1;
+    width:100%; max-width:640px; padding:0 24px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+  }
+
+  /* ---------- cookie trigger ---------- */
+  .cookie-trigger{
+    background:none; border:none; cursor:pointer; color:inherit; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; gap:14px; padding:8px;
+  }
+  .cookie-trigger[hidden]{ display:none; }
+  .cookie-trigger:hover .cookie-label{ color:var(--brass-bright); }
+  .cookie-trigger:hover .cookie-stage{ transform:rotate(-4deg) scale(1.05); }
+  .cookie-trigger:focus-visible{ outline:2px solid var(--brass-bright); outline-offset:8px; border-radius:16px; }
+
+  .cookie-stage{
+    position:relative;
+    width:clamp(58px,8vw,84px); height:clamp(58px,8vw,84px);
+    transform:rotate(-4deg);
+    transition:transform 220ms ease;
+  }
+  .cookie-stage:not(.is-cracked) .cookie-wrap{ animation:cookie-idle 2.6s ease-in-out infinite; }
+  @keyframes cookie-idle{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-5px) rotate(5deg); }
+  }
+  .cookie-wrap{ position:absolute; inset:0; }
+  .cookie-half{
+    position:absolute; inset:0; width:100%; height:100%;
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));
+    transition:transform 650ms cubic-bezier(.2,.8,.3,1), opacity 500ms ease 120ms;
+  }
+  .cookie-half--l{ clip-path:inset(0 50% 0 0); }
+  .cookie-half--r{ clip-path:inset(0 0 0 50%); }
+  .is-cracked .cookie-half--l{ transform:translate(-30%,-16%) rotate(-26deg); opacity:0; }
+  .is-cracked .cookie-half--r{ transform:translate(30%,-16%) rotate(26deg); opacity:0; }
+
+  .spark{
+    position:absolute; left:50%; top:50%; width:5px; height:5px; margin:-2.5px;
+    border-radius:50%; background:var(--brass-bright); opacity:0;
+  }
+  @keyframes spark-burst{
+    0%{ transform:translate(0,0) scale(.4); opacity:1; }
+    65%{ opacity:1; }
+    100%{ transform:translate(var(--tx),var(--ty)) scale(1); opacity:0; }
+  }
+  .burst{ position:absolute; inset:0; pointer-events:none; }
+  .is-cracked .burst .spark{ animation:spark-burst 680ms ease-out forwards; }
+  .burst .spark:nth-child(1){ --tx:-40px; --ty:-30px; }
+  .burst .spark:nth-child(2){ --tx:2px;  --ty:-46px; animation-delay:20ms; }
+  .burst .spark:nth-child(3){ --tx:42px; --ty:-28px; animation-delay:40ms; }
+  .burst .spark:nth-child(4){ --tx:52px; --ty:8px;   animation-delay:10ms; }
+  .burst .spark:nth-child(5){ --tx:32px; --ty:38px;  animation-delay:55ms; }
+  .burst .spark:nth-child(6){ --tx:-30px;--ty:38px;  animation-delay:25ms; }
+  .burst .spark:nth-child(7){ --tx:-52px;--ty:8px;   animation-delay:45ms; }
+  .burst .spark:nth-child(8){ --tx:-2px; --ty:44px;  animation-delay:15ms; }
+
+  .cookie-label{
+    font-size:clamp(13px,1.6vw,16px); font-weight:600; letter-spacing:.01em;
+    color:var(--vellum-dim); transition:color 200ms ease;
+  }
+
+  /* ---------- reveal ---------- */
+  .reveal{
+    position:relative;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    opacity:0; transform:translateY(10px);
+  }
+  .reveal[hidden]{ display:none; }
+  .reveal.is-shown{ animation:reveal-in 520ms ease-out forwards; }
+  @keyframes reveal-in{ to{ opacity:1; transform:translateY(0); } }
+
+  .reveal::before{
+    content:''; position:absolute; top:50%; left:50%;
+    width:380px; height:170px; transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(243,207,142,.16), transparent 70%);
+    filter:blur(14px); z-index:-1; pointer-events:none;
+    animation:glow-breathe 5s ease-in-out infinite;
+  }
+  @keyframes glow-breathe{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+
+  .reveal-burst{ position:absolute; inset:0; pointer-events:none; }
+  .reveal-burst .spark{ top:34%; }
+  .reveal.is-shown .reveal-burst .spark{ animation:spark-burst 760ms ease-out forwards; }
+  .reveal-burst .spark:nth-child(1){ --tx:-130px; --ty:-22px; animation-delay:80ms; }
+  .reveal-burst .spark:nth-child(2){ --tx:-65px;  --ty:-42px; animation-delay:140ms; }
+  .reveal-burst .spark:nth-child(3){ --tx:0px;    --ty:-50px; animation-delay:20ms; }
+  .reveal-burst .spark:nth-child(4){ --tx:65px;   --ty:-42px; animation-delay:160ms; }
+  .reveal-burst .spark:nth-child(5){ --tx:130px;  --ty:-22px; animation-delay:100ms; }
+
+  .reveal-eyebrow{
+    font-size:clamp(10.5px,1.1vw,12px); letter-spacing:.16em; text-transform:uppercase;
+    color:var(--brass-bright); font-weight:700;
+  }
+
+  .reveal-quote{
+    margin:2px 0 0; font-family:'Newsreader', serif; font-style:italic; font-weight:450;
+    line-height:1.4; color:var(--vellum);
+    max-width:min(880px,90%); margin-left:auto; margin-right:auto;
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .reveal-quote.q-lg{ font-size:clamp(17px,2.1vw,25px); }
+  .reveal-quote.q-md{ font-size:clamp(15.5px,1.7vw,21px); }
+  .reveal-quote.q-sm{ font-size:clamp(14px,1.4vw,17.5px); }
+
+  .reveal-author{
+    margin:0; font-size:clamp(11.5px,1.2vw,13px); letter-spacing:.05em;
+    text-transform:uppercase; color:var(--brass);
+  }
+
+  .reveal-again{
+    margin-top:6px; background:transparent; border:1px solid var(--ink-light);
+    color:var(--vellum-dim); font-family:inherit; font-size:clamp(11.5px,1.1vw,13px);
+    font-weight:600; padding:7px 14px; border-radius:999px; cursor:pointer;
+    transition:border-color 180ms ease, color 180ms ease, transform 140ms ease;
+  }
+  .reveal-again:hover{ border-color:var(--brass); color:var(--brass-bright); }
+  .reveal-again:active{ transform:scale(.96); }
+  .reveal-again:focus-visible{ outline:2px solid var(--brass-bright); outline-offset:3px; }
+
+  @media (prefers-reduced-motion:reduce){
+    .cookie-stage:not(.is-cracked) .cookie-wrap,
+    .amb, .cookie-half, .spark, .reveal, .reveal.is-shown,
+    .reveal::before{ animation:none !important; transition:none !important; }
+    .reveal{ opacity:1; transform:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="banner">
+    <div class="sparkle-field" aria-hidden="true">
+      <span class="amb" style="left:8%;top:24%;animation-delay:0s;"></span>
+      <span class="amb" style="left:15%;top:68%;animation-delay:.6s;"></span>
+      <span class="amb" style="left:28%;top:16%;animation-delay:1.4s;"></span>
+      <span class="amb" style="left:72%;top:20%;animation-delay:.3s;"></span>
+      <span class="amb" style="left:85%;top:64%;animation-delay:1s;"></span>
+      <span class="amb" style="left:93%;top:30%;animation-delay:1.8s;"></span>
+      <span class="amb" style="left:62%;top:78%;animation-delay:2.2s;"></span>
+    </div>
+
+    <div class="stage">
+      <button class="cookie-trigger" id="cookieBtn" type="button">
+        <span class="cookie-stage" id="cookieStage">
+          <span class="cookie-wrap">
+            <svg class="cookie-half cookie-half--l" viewBox="0 0 120 120" aria-hidden="true">
+              <defs>
+                <linearGradient id="cookieGradL" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#f6d9a0"/>
+                  <stop offset="0.55" stop-color="#dba84f"/>
+                  <stop offset="1" stop-color="#b5792a"/>
+                </linearGradient>
+              </defs>
+              <path d="M60,14 C82,14 100,30 102,52 C104,76 86,100 60,104 C36,108 16,90 14,64 C12,40 30,18 60,14 Z" fill="url(#cookieGradL)"/>
+              <path d="M26,48 C42,38 80,38 96,54" fill="none" stroke="#8a5a22" stroke-width="2.5" opacity="0.4" stroke-linecap="round"/>
+            </svg>
+            <svg class="cookie-half cookie-half--r" viewBox="0 0 120 120" aria-hidden="true">
+              <defs>
+                <linearGradient id="cookieGradR" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#f6d9a0"/>
+                  <stop offset="0.55" stop-color="#dba84f"/>
+                  <stop offset="1" stop-color="#b5792a"/>
+                </linearGradient>
+              </defs>
+              <path d="M60,14 C82,14 100,30 102,52 C104,76 86,100 60,104 C36,108 16,90 14,64 C12,40 30,18 60,14 Z" fill="url(#cookieGradR)"/>
+              <path d="M26,48 C42,38 80,38 96,54" fill="none" stroke="#8a5a22" stroke-width="2.5" opacity="0.4" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="burst" aria-hidden="true">
+            <span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span>
+            <span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span>
+          </span>
+        </span>
+        <span class="cookie-label" id="cookieLabel">Click to crack open today's quote</span>
+      </button>
+
+      <div class="reveal" id="reveal" aria-live="polite" hidden>
+        <span class="reveal-burst" aria-hidden="true">
+          <span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span>
+        </span>
+        <span class="reveal-eyebrow">✦ Today's fortune</span>
+        <p class="reveal-quote" id="quoteText"></p>
+        <p class="reveal-author" id="quoteAuthor"></p>
+        <button class="reveal-again" id="againBtn" type="button">🥠 Crack another</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function () {
+  var quotes = [
+    { q: "The only way to do great work is to love what you do.", a: "Steve Jobs" },
+    { q: "Believe you can and you're halfway there.", a: "Theodore Roosevelt" },
+    { q: "It does not matter how slowly you go as long as you do not stop.", a: "Confucius" },
+    { q: "Success is not final, failure is not fatal: it is the courage to continue that counts.", a: "Winston Churchill" },
+    { q: "The future belongs to those who believe in the beauty of their dreams.", a: "Eleanor Roosevelt" },
+    { q: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", a: "Ralph Waldo Emerson" },
+    { q: "The way to get started is to quit talking and begin doing.", a: "Walt Disney" },
+    { q: "Whether you think you can, or you think you can't — you're right.", a: "Henry Ford" },
+    { q: "It always seems impossible until it's done.", a: "Nelson Mandela" },
+    { q: "You miss 100% of the shots you don't take.", a: "Wayne Gretzky" },
+    { q: "Whatever you are, be a good one.", a: "Abraham Lincoln" },
+    { q: "The mind is everything. What you think, you become.", a: "Gautama Buddha" },
+    { q: "Life is what happens to you while you're busy making other plans.", a: "John Lennon" },
+    { q: "Tell me and I forget, teach me and I may remember, involve me and I learn.", a: "Benjamin Franklin" },
+    { q: "In the middle of difficulty lies opportunity.", a: "Albert Einstein" },
+    { q: "Do not go where the path may lead; go instead where there is no path and leave a trail.", a: "Ralph Waldo Emerson" },
+    { q: "Keep your face always toward the sunshine, and shadows will fall behind you.", a: "Walt Whitman" },
+    { q: "Twenty years from now you will be more disappointed by the things you didn't do than by the ones you did.", a: "Mark Twain" },
+    { q: "I am not afraid of storms, for I am learning how to sail my ship.", a: "Louisa May Alcott" },
+    { q: "Spread love everywhere you go. Let no one ever come to you without leaving happier.", a: "Mother Teresa" },
+    { q: "When you reach the end of your rope, tie a knot in it and hang on.", a: "Franklin D. Roosevelt" },
+    { q: "Don't judge each day by the harvest you reap but by the seeds that you plant.", a: "Robert Louis Stevenson" },
+    { q: "If you don't like something, change it. If you can't change it, change your attitude.", a: "Maya Angelou" },
+    { q: "Nothing is impossible; the word itself says 'I'm possible.'", a: "Audrey Hepburn" },
+    { q: "Although the world is full of suffering, it is also full of the overcoming of it.", a: "Helen Keller" },
+    { q: "You are never too old to set another goal or to dream a new dream.", a: "C.S. Lewis" },
+    { q: "The biggest adventure you can take is to live the life of your dreams.", a: "Oprah Winfrey" },
+    { q: "It is our choices that show what we truly are, far more than our abilities.", a: "J.K. Rowling" },
+    { q: "A journey of a thousand miles begins with a single step.", a: "Lao Tzu" },
+    { q: "It's not whether you get knocked down; it's whether you get up.", a: "Vince Lombardi" },
+    { q: "I've failed over and over and over again in my life, and that is why I succeed.", a: "Michael Jordan" },
+    { q: "Do what you can, with what you have, where you are.", a: "Theodore Roosevelt" },
+    { q: "Success is to be measured not so much by the position one has reached, as by the obstacles overcome.", a: "Booker T. Washington" },
+    { q: "Nothing in life is to be feared, it is only to be understood.", a: "Marie Curie" },
+    { q: "The most difficult thing is the decision to act; the rest is merely tenacity.", a: "Amelia Earhart" },
+    { q: "I have learned over the years that when one's mind is made up, this diminishes fear.", a: "Rosa Parks" },
+    { q: "Go confidently in the direction of your dreams. Live the life you have imagined.", a: "Henry David Thoreau" },
+    { q: "Even if you're on the right track, you'll get run over if you just sit there.", a: "Will Rogers" },
+    { q: "Our greatest glory is not in never falling, but in rising every time we fall.", a: "Confucius" },
+    { q: "You cannot shake hands with a clenched fist.", a: "Indira Gandhi" },
+    { q: "Success is not the key to happiness. Happiness is the key to success.", a: "Albert Schweitzer" },
+    { q: "Failure is simply the opportunity to begin again, this time more intelligently.", a: "Henry Ford" },
+    { q: "Life isn't about finding yourself. Life is about creating yourself.", a: "George Bernard Shaw" },
+    { q: "Action is the foundational key to all success.", a: "Pablo Picasso" },
+    { q: "Whatever the mind can conceive and believe, it can achieve.", a: "Napoleon Hill" },
+    { q: "Happiness is not something readymade. It comes from your own actions.", a: "Dalai Lama" },
+    { q: "When the whole world is silent, even one voice becomes powerful.", a: "Malala Yousafzai" },
+    { q: "Do your little bit of good where you are; it's those little bits of good put together that overwhelm the world.", a: "Desmond Tutu" },
+    { q: "The future depends on what you do today.", a: "Mahatma Gandhi" },
+    { q: "Knowing yourself is the beginning of all wisdom.", a: "Aristotle" },
+    { q: "Turn your wounds into wisdom.", a: "Oprah Winfrey" },
+    { q: "The secret of getting ahead is getting started.", a: "Mark Twain" },
+    { q: "Difficulties strengthen the mind, as labor does the body.", a: "Seneca" },
+    { q: "He who has a why to live can bear almost any how.", a: "Friedrich Nietzsche" },
+    { q: "Energy and persistence conquer all things.", a: "Benjamin Franklin" },
+    { q: "The only limit to our realization of tomorrow is our doubts of today.", a: "Franklin D. Roosevelt" },
+    { q: "What you get by achieving your goals is not as important as who you become by achieving your goals.", a: "Zig Ziglar" },
+    { q: "The pessimist sees difficulty in every opportunity. The optimist sees opportunity in every difficulty.", a: "Winston Churchill" },
+    { q: "Either you run the day, or the day runs you.", a: "Jim Rohn" }
+  ];
+
+  function hashString(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) {
+      h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+    }
+    return Math.abs(h);
+  }
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+  function getTodayIndex() { return hashString(todayKey()) % quotes.length; }
+  function pickRandom(excluding) {
+    if (quotes.length <= 1) return 0;
+    var i;
+    do { i = Math.floor(Math.random() * quotes.length); } while (i === excluding);
+    return i;
+  }
+  function sizeTier(text) {
+    var len = text.length;
+    if (len <= 55) return 'q-lg';
+    if (len <= 95) return 'q-md';
+    return 'q-sm';
+  }
+
+  var mode = 'today';
+  var currentIndex = null;
+
+  var el = {
+    cookieBtn: document.getElementById('cookieBtn'),
+    cookieLabel: document.getElementById('cookieLabel'),
+    cookieStage: document.getElementById('cookieStage'),
+    reveal: document.getElementById('reveal'),
+    quoteText: document.getElementById('quoteText'),
+    quoteAuthor: document.getElementById('quoteAuthor'),
+    againBtn: document.getElementById('againBtn')
+  };
+
+  function crackAndReveal() {
+    currentIndex = (mode === 'today') ? getTodayIndex() : pickRandom(currentIndex);
+
+    el.cookieStage.classList.remove('is-cracked');
+    void el.cookieStage.offsetWidth;
+    el.cookieStage.classList.add('is-cracked');
+
+    window.setTimeout(function () {
+      el.cookieBtn.hidden = true;
+
+      var quote = quotes[currentIndex];
+      el.quoteText.textContent = quote.q;
+      el.quoteText.className = 'reveal-quote ' + sizeTier(quote.q);
+      el.quoteAuthor.textContent = '\u2014 ' + quote.a;
+
+      el.reveal.hidden = false;
+      el.reveal.classList.remove('is-shown');
+      void el.reveal.offsetWidth;
+      el.reveal.classList.add('is-shown');
+
+      el.reveal.setAttribute('tabindex', '-1');
+      el.reveal.focus({ preventScroll: true });
+    }, 560);
+  }
+
+  el.cookieBtn.addEventListener('click', crackAndReveal);
+
+  el.againBtn.addEventListener('click', function () {
+    mode = 'random';
+    el.cookieLabel.textContent = 'Click for another fortune';
+    el.reveal.hidden = true;
+    el.reveal.classList.remove('is-shown');
+    el.cookieStage.classList.remove('is-cracked');
+    el.cookieBtn.hidden = false;
+    el.cookieBtn.focus({ preventScroll: true });
+  });
+})();
+</script>
+</body>
+</html>
