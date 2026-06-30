@@ -250,7 +250,13 @@
     text-transform:uppercase; color:var(--brass);
   }
 
-  .reveal-again{ margin-top:6px; }
+  .claim-note{
+    margin-top:6px;
+    font-size:clamp(11.5px,1.1vw,13px);
+    color:var(--vellum-dim);
+    letter-spacing:.02em;
+    font-variant-numeric:tabular-nums;
+  }
 </style>
 </head>
 <body>
@@ -368,7 +374,7 @@
         <span class="panel-eyebrow" id="revealEyebrow">✦ Today's fortune</span>
         <p class="reveal-quote" id="quoteText"></p>
         <p class="reveal-author" id="quoteAuthor"></p>
-        <button class="ghost-pill reveal-again" id="againBtn" type="button">🥠 Crack another</button>
+        <span class="claim-note" id="claimNote"></span>
       </div>
 
     </div>
@@ -489,6 +495,8 @@
     ]
   };
 
+  var STORAGE_KEY = 'ismQotdClaim_v1';
+
   function hashString(str) {
     var h = 0;
     for (var i = 0; i < str.length; i++) {
@@ -496,16 +504,18 @@
     }
     return Math.abs(h);
   }
-  function todayKey() {
-    var d = new Date();
-    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+
+  // The "day" for this banner runs 7:00 AM to 7:00 AM, not midnight to midnight.
+  function cycleKey() {
+    var now = new Date();
+    var y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+    if (now.getHours() < 7) {
+      var prev = new Date(y, m, d - 1);
+      y = prev.getFullYear(); m = prev.getMonth(); d = prev.getDate();
+    }
+    return y + '-' + (m + 1) + '-' + d;
   }
-  function pickRandom(excluding, len) {
-    if (len <= 1) return 0;
-    var i;
-    do { i = Math.floor(Math.random() * len); } while (i === excluding);
-    return i;
-  }
+
   function sizeTier(text) {
     var len = text.length;
     if (len <= 55) return 'q-lg';
@@ -513,11 +523,48 @@
     return 'q-sm';
   }
 
+  function formatCountdown(ms) {
+    var totalSec = Math.max(0, Math.floor(ms / 1000));
+    var hrs = Math.floor(totalSec / 3600);
+    var mins = Math.floor((totalSec % 3600) / 60);
+    var secs = totalSec % 60;
+    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+    if (hrs > 0) return hrs + 'h ' + pad2(mins) + 'm ' + pad2(secs) + 's';
+    if (mins > 0) return mins + 'm ' + pad2(secs) + 's';
+    return secs + 's';
+  }
+
+  function updateCountdown() {
+    var now = new Date();
+    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 0, 0, 0);
+    if (now >= next) next.setDate(next.getDate() + 1);
+    el.claimNote.textContent = 'New quote in ' + formatCountdown(next - now);
+  }
+
+  function readClaim() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeClaim(record) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
+    } catch (e) {
+      // storage unavailable (private browsing, sandboxed preview, etc.) — the
+      // once-a-day lock simply won't persist across reloads in that case
+    }
+  }
+
   var pathMode = null;      // 'today' | 'mood'
   var activePool = null;
   var activeMoodKey = null;
-  var isFirstPick = true;
   var currentIndex = null;
+  var thisCycle = cycleKey();
 
   var el = {
     welcomePanel: document.getElementById('welcomePanel'),
@@ -534,7 +581,7 @@
     revealEyebrow: document.getElementById('revealEyebrow'),
     quoteText: document.getElementById('quoteText'),
     quoteAuthor: document.getElementById('quoteAuthor'),
-    againBtn: document.getElementById('againBtn')
+    claimNote: document.getElementById('claimNote')
   };
 
   function showPanel(node) {
@@ -552,13 +599,27 @@
     node.focus({ preventScroll: true });
   }
 
-  // ---- init: time-aware greeting ----
-  var hr = new Date().getHours();
-  el.greetingText.textContent =
-    (hr >= 5 && hr < 12) ? 'Good morning' :
-    (hr >= 12 && hr < 17) ? 'Good afternoon' : 'Good evening';
-  el.timeIcon.classList.add((hr >= 6 && hr < 18) ? 'is-day' : 'is-night');
-  showPanel(el.welcomePanel);
+  updateCountdown();
+  window.setInterval(updateCountdown, 1000);
+
+  // ---- init: show what's already been claimed this cycle, or start fresh ----
+  var claim = readClaim();
+
+  if (claim && claim.cycle === thisCycle && claim.q && claim.a) {
+    hidePanel(el.welcomePanel);
+    el.quoteText.textContent = claim.q;
+    el.quoteText.className = 'reveal-quote ' + sizeTier(claim.q);
+    el.quoteAuthor.textContent = '\u2014 ' + claim.a;
+    el.revealEyebrow.textContent = '✦ Already claimed';
+    showPanel(el.reveal);
+  } else {
+    var hr = new Date().getHours();
+    el.greetingText.textContent =
+      (hr >= 5 && hr < 12) ? 'Good morning' :
+      (hr >= 12 && hr < 17) ? 'Good afternoon' : 'Good evening';
+    el.timeIcon.classList.add((hr >= 6 && hr < 18) ? 'is-day' : 'is-night');
+    showPanel(el.welcomePanel);
+  }
 
   // ---- welcome -> choice ----
   el.welcomePanel.addEventListener('click', function () {
@@ -605,16 +666,11 @@
     });
   }
 
-  // ---- cookie crack + reveal ----
+  // ---- cookie crack + reveal — one claim per 7am cycle ----
   function crackAndReveal() {
-    if (isFirstPick) {
-      currentIndex = (pathMode === 'today')
-        ? hashString(todayKey()) % activePool.length
-        : hashString(todayKey() + '::' + activeMoodKey) % activePool.length;
-      isFirstPick = false;
-    } else {
-      currentIndex = pickRandom(currentIndex, activePool.length);
-    }
+    currentIndex = (pathMode === 'today')
+      ? hashString(thisCycle) % activePool.length
+      : hashString(thisCycle + '::' + activeMoodKey) % activePool.length;
 
     el.cookieStage.classList.remove('is-cracked');
     void el.cookieStage.offsetWidth;
@@ -629,19 +685,14 @@
       el.quoteAuthor.textContent = '\u2014 ' + quote.a;
       el.revealEyebrow.textContent = (pathMode === 'today') ? "✦ Today's fortune" : '✦ Just for you';
 
+      writeClaim({ cycle: thisCycle, q: quote.q, a: quote.a });
+
       showPanel(el.reveal);
       focusPanel(el.reveal);
     }, 560);
   }
 
   el.cookieBtn.addEventListener('click', crackAndReveal);
-
-  el.againBtn.addEventListener('click', function () {
-    hidePanel(el.reveal);
-    el.cookieStage.classList.remove('is-cracked');
-    showPanel(el.cookieBtn);
-    el.cookieBtn.focus({ preventScroll: true });
-  });
 })();
 </script>
 </body>
