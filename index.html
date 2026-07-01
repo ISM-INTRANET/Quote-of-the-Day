@@ -615,8 +615,8 @@
   } else {
     var hr = new Date().getHours();
     el.greetingText.textContent =
-      (hr >= 5 && hr < 12) ? 'Good morning' :
-      (hr >= 12 && hr < 17) ? 'Good afternoon' : 'Good evening';
+      (hr >= 5 && hr < 12) ? 'Good Morning' :
+      (hr >= 12 && hr < 17) ? 'Good Afternoon' : 'Good Evening';
     el.timeIcon.classList.add((hr >= 6 && hr < 18) ? 'is-day' : 'is-night');
     showPanel(el.welcomePanel);
   }
