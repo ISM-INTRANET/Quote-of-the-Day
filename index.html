@@ -250,13 +250,7 @@
     text-transform:uppercase; color:var(--brass);
   }
 
-  .claim-note{
-    margin-top:6px;
-    font-size:clamp(11.5px,1.1vw,13px);
-    color:var(--vellum-dim);
-    letter-spacing:.02em;
-    font-variant-numeric:tabular-nums;
-  }
+  .reveal-again{ margin-top:6px; }
 </style>
 </head>
 <body>
@@ -374,7 +368,7 @@
         <span class="panel-eyebrow" id="revealEyebrow">✦ Today's fortune</span>
         <p class="reveal-quote" id="quoteText"></p>
         <p class="reveal-author" id="quoteAuthor"></p>
-        <span class="claim-note" id="claimNote"></span>
+        <button class="ghost-pill reveal-again" id="againBtn" type="button">🥠 Crack another</button>
       </div>
 
     </div>
@@ -495,8 +489,6 @@
     ]
   };
 
-  var STORAGE_KEY = 'ismQotdClaim_v1';
-
   function hashString(str) {
     var h = 0;
     for (var i = 0; i < str.length; i++) {
@@ -505,15 +497,16 @@
     return Math.abs(h);
   }
 
-  // The "day" for this banner runs 7:00 AM to 7:00 AM, not midnight to midnight.
-  function cycleKey() {
-    var now = new Date();
-    var y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
-    if (now.getHours() < 7) {
-      var prev = new Date(y, m, d - 1);
-      y = prev.getFullYear(); m = prev.getMonth(); d = prev.getDate();
-    }
-    return y + '-' + (m + 1) + '-' + d;
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+
+  function pickRandom(excluding, len) {
+    if (len <= 1) return 0;
+    var i;
+    do { i = Math.floor(Math.random() * len); } while (i === excluding);
+    return i;
   }
 
   function sizeTier(text) {
@@ -523,48 +516,11 @@
     return 'q-sm';
   }
 
-  function formatCountdown(ms) {
-    var totalSec = Math.max(0, Math.floor(ms / 1000));
-    var hrs = Math.floor(totalSec / 3600);
-    var mins = Math.floor((totalSec % 3600) / 60);
-    var secs = totalSec % 60;
-    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
-    if (hrs > 0) return hrs + 'h ' + pad2(mins) + 'm ' + pad2(secs) + 's';
-    if (mins > 0) return mins + 'm ' + pad2(secs) + 's';
-    return secs + 's';
-  }
-
-  function updateCountdown() {
-    var now = new Date();
-    var next = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 7, 0, 0, 0);
-    if (now >= next) next.setDate(next.getDate() + 1);
-    el.claimNote.textContent = 'New quote in ' + formatCountdown(next - now);
-  }
-
-  function readClaim() {
-    try {
-      var raw = window.localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function writeClaim(record) {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(record));
-    } catch (e) {
-      // storage unavailable (private browsing, sandboxed preview, etc.) — the
-      // once-a-day lock simply won't persist across reloads in that case
-    }
-  }
-
-  var pathMode = null;      // 'today' | 'mood'
+  var pathMode = null;
   var activePool = null;
   var activeMoodKey = null;
+  var isFirstPick = true;
   var currentIndex = null;
-  var thisCycle = cycleKey();
 
   var el = {
     welcomePanel: document.getElementById('welcomePanel'),
@@ -581,7 +537,7 @@
     revealEyebrow: document.getElementById('revealEyebrow'),
     quoteText: document.getElementById('quoteText'),
     quoteAuthor: document.getElementById('quoteAuthor'),
-    claimNote: document.getElementById('claimNote')
+    againBtn: document.getElementById('againBtn')
   };
 
   function showPanel(node) {
@@ -599,27 +555,13 @@
     node.focus({ preventScroll: true });
   }
 
-  updateCountdown();
-  window.setInterval(updateCountdown, 1000);
-
-  // ---- init: show what's already been claimed this cycle, or start fresh ----
-  var claim = readClaim();
-
-  if (claim && claim.cycle === thisCycle && claim.q && claim.a) {
-    hidePanel(el.welcomePanel);
-    el.quoteText.textContent = claim.q;
-    el.quoteText.className = 'reveal-quote ' + sizeTier(claim.q);
-    el.quoteAuthor.textContent = '\u2014 ' + claim.a;
-    el.revealEyebrow.textContent = '✦ Already claimed';
-    showPanel(el.reveal);
-  } else {
-    var hr = new Date().getHours();
-    el.greetingText.textContent =
-      (hr >= 5 && hr < 12) ? 'Good Morning' :
-      (hr >= 12 && hr < 17) ? 'Good Afternoon' : 'Good Evening';
-    el.timeIcon.classList.add((hr >= 6 && hr < 18) ? 'is-day' : 'is-night');
-    showPanel(el.welcomePanel);
-  }
+  // ---- init: always start with the welcome ----
+  var hr = new Date().getHours();
+  el.greetingText.textContent =
+    (hr >= 5 && hr < 12) ? 'Good Morning' :
+    (hr >= 12 && hr < 17) ? 'Good Afternoon' : 'Good Evening';
+  el.timeIcon.classList.add((hr >= 6 && hr < 18) ? 'is-day' : 'is-night');
+  showPanel(el.welcomePanel);
 
   // ---- welcome -> choice ----
   el.welcomePanel.addEventListener('click', function () {
@@ -635,11 +577,12 @@
     focusPanel(el.moodPanel);
   });
 
-  // ---- choice -> cookie (general "today" pool) ----
+  // ---- choice -> cookie (general pool) ----
   el.inspireBtn.addEventListener('click', function () {
     pathMode = 'today';
     activePool = generalQuotes;
     activeMoodKey = null;
+    isFirstPick = true;
     hidePanel(el.choicePanel);
     showPanel(el.cookieBtn);
     el.cookieBtn.focus({ preventScroll: true });
@@ -652,7 +595,7 @@
     focusPanel(el.choicePanel);
   });
 
-  // ---- mood chip -> cookie (mood-matched pool) ----
+  // ---- mood chip -> cookie ----
   var moodChips = document.querySelectorAll('.mood-chip');
   for (var c = 0; c < moodChips.length; c++) {
     moodChips[c].addEventListener('click', function (evt) {
@@ -660,17 +603,23 @@
       pathMode = 'mood';
       activeMoodKey = key;
       activePool = moodQuotes[key];
+      isFirstPick = true;
       hidePanel(el.moodPanel);
       showPanel(el.cookieBtn);
       el.cookieBtn.focus({ preventScroll: true });
     });
   }
 
-  // ---- cookie crack + reveal — one claim per 7am cycle ----
+  // ---- crack + reveal ----
   function crackAndReveal() {
-    currentIndex = (pathMode === 'today')
-      ? hashString(thisCycle) % activePool.length
-      : hashString(thisCycle + '::' + activeMoodKey) % activePool.length;
+    if (isFirstPick) {
+      currentIndex = (pathMode === 'today')
+        ? hashString(todayKey()) % activePool.length
+        : hashString(todayKey() + '::' + activeMoodKey) % activePool.length;
+      isFirstPick = false;
+    } else {
+      currentIndex = pickRandom(currentIndex, activePool.length);
+    }
 
     el.cookieStage.classList.remove('is-cracked');
     void el.cookieStage.offsetWidth;
@@ -685,14 +634,20 @@
       el.quoteAuthor.textContent = '\u2014 ' + quote.a;
       el.revealEyebrow.textContent = (pathMode === 'today') ? "✦ Today's fortune" : '✦ Just for you';
 
-      writeClaim({ cycle: thisCycle, q: quote.q, a: quote.a });
-
       showPanel(el.reveal);
       focusPanel(el.reveal);
     }, 560);
   }
 
   el.cookieBtn.addEventListener('click', crackAndReveal);
+
+  // ---- crack another ----
+  el.againBtn.addEventListener('click', function () {
+    hidePanel(el.reveal);
+    el.cookieStage.classList.remove('is-cracked');
+    showPanel(el.cookieBtn);
+    el.cookieBtn.focus({ preventScroll: true });
+  });
 })();
 </script>
 </body>
