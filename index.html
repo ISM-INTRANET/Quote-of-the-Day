@@ -156,30 +156,51 @@
     display:flex; flex-direction:column; align-items:center; gap:14px; padding:8px;
   }
   .cookie-trigger:hover .cookie-label{ color:var(--brass-bright); }
-  .cookie-trigger:hover .cookie-stage{ transform:rotate(-4deg) scale(1.05); }
+  .cookie-trigger:hover .cookie-stage{ transform:rotate(45deg) scale(1.06); }
   .cookie-trigger:focus-visible{ outline:2px solid var(--brass-bright); outline-offset:8px; border-radius:16px; }
 
   .cookie-stage{
     position:relative;
-    width:clamp(58px,8vw,84px); height:clamp(58px,8vw,84px);
-    transform:rotate(-4deg);
+    width:clamp(88px,11vw,118px); height:clamp(38px,4.8vw,52px);
+    transform:rotate(45deg);
     transition:transform 220ms ease;
+    margin-bottom:clamp(30px,3.8vw,42px);
   }
   .cookie-stage:not(.is-cracked) .cookie-wrap{ animation:cookie-idle 2.6s ease-in-out infinite; }
   @keyframes cookie-idle{
     0%,100%{ transform:translateY(0) rotate(0deg); }
-    50%{ transform:translateY(-5px) rotate(5deg); }
+    50%{ transform:translateY(-5px) rotate(4deg); }
   }
-  .cookie-wrap{ position:absolute; inset:0; }
-  .cookie-half{
-    position:absolute; inset:0; width:100%; height:100%;
-    filter:drop-shadow(0 6px 10px rgba(120,53,15,.28));
-    transition:transform 650ms cubic-bezier(.2,.8,.3,1), opacity 500ms ease 120ms;
+  .cookie-wrap{
+    position:absolute; inset:0;
+    display:flex;
+    filter:drop-shadow(0 5px 12px rgba(100,30,10,.32));
   }
-  .cookie-half--l{ clip-path:inset(0 50% 0 0); }
-  .cookie-half--r{ clip-path:inset(0 0 0 50%); }
-  .is-cracked .cookie-half--l{ transform:translate(-30%,-16%) rotate(-26deg); opacity:0; }
-  .is-cracked .cookie-half--r{ transform:translate(30%,-16%) rotate(26deg); opacity:0; }
+  .pill-cap{
+    position:relative; width:50%; height:100%;
+    background:linear-gradient(160deg, #f07272 0%, #c0392b 100%);
+    border-radius:999px 0 0 999px;
+    transition:transform 650ms cubic-bezier(.2,.8,.3,1), opacity 500ms ease 100ms;
+  }
+  .pill-cap::after{
+    content:''; position:absolute;
+    width:32%; height:52%; top:10%; left:14%;
+    background:rgba(255,255,255,.25); border-radius:50%;
+  }
+  .pill-body{
+    position:relative; width:50%; height:100%;
+    background:linear-gradient(160deg, #ffffff 0%, #dedad3 100%);
+    border-radius:0 999px 999px 0;
+    border-left:1.5px solid rgba(0,0,0,.07);
+    transition:transform 650ms cubic-bezier(.2,.8,.3,1), opacity 500ms ease 100ms;
+  }
+  .pill-body::after{
+    content:''; position:absolute;
+    width:32%; height:52%; top:10%; right:14%;
+    background:rgba(255,255,255,.55); border-radius:50%;
+  }
+  .is-cracked .pill-cap{ transform:translate(-52%,-24%) rotate(-30deg); opacity:0; }
+  .is-cracked .pill-body{ transform:translate(52%,-24%) rotate(30deg); opacity:0; }
 
   .spark{
     position:absolute; left:50%; top:50%; width:5px; height:5px; margin:-2.5px;
@@ -208,13 +229,14 @@
 
   @media (prefers-reduced-motion:reduce){
     .cookie-stage:not(.is-cracked) .cookie-wrap,
-    .amb, .cookie-half, .spark{ animation:none !important; transition:none !important; }
+    .amb, .pill-cap, .pill-body, .spark{ animation:none !important; transition:none !important; }
   }
 
   /* ---------- reveal ---------- */
   .reveal{
     position:relative;
-    display:flex; flex-direction:column; align-items:center; gap:10px;
+    display:flex; flex-direction:row; align-items:center; gap:18px;
+    width:100%;
   }
   .reveal::before{
     content:''; position:absolute; top:50%; left:50%;
@@ -227,7 +249,7 @@
   @media (prefers-reduced-motion:reduce){ .reveal::before{ animation:none; } }
 
   .reveal-burst{ position:absolute; inset:0; pointer-events:none; }
-  .reveal-burst .spark{ top:34%; }
+  .reveal-burst .spark{ top:50%; }
   .reveal.is-shown .reveal-burst .spark{ animation:spark-burst 760ms ease-out forwards; }
   .reveal-burst .spark:nth-child(1){ --tx:-130px; --ty:-22px; animation-delay:80ms; }
   .reveal-burst .spark:nth-child(2){ --tx:-65px;  --ty:-42px; animation-delay:140ms; }
@@ -235,13 +257,23 @@
   .reveal-burst .spark:nth-child(4){ --tx:65px;   --ty:-42px; animation-delay:160ms; }
   .reveal-burst .spark:nth-child(5){ --tx:130px;  --ty:-22px; animation-delay:100ms; }
 
+  .reveal-photo-col{
+    flex-shrink:0;
+    width:clamp(60px,4.5vw,72px);
+    display:flex; align-items:flex-start; justify-content:center;
+    align-self:flex-start; padding-top:4px;
+  }
+  .reveal-text-col{
+    display:flex; flex-direction:column; align-items:center; gap:5px;
+    text-align:center; flex:1; min-width:0;
+  }
+
   .reveal-quote{
-    margin:2px 0 0; font-family:'Newsreader', serif; font-style:italic; font-weight:450;
-    line-height:1.4; color:var(--vellum);
-    max-width:min(880px,90%); margin-left:auto; margin-right:auto;
+    margin:0; font-family:'Newsreader', serif; font-style:italic; font-weight:450;
+    line-height:1.4; color:var(--vellum); width:100%;
     display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
   }
-  .reveal-quote.q-lg{ font-size:clamp(17px,2.1vw,25px); }
+  .reveal-quote.q-lg{ font-size:clamp(17px,2.1vw,25px); display:block; white-space:nowrap; text-overflow:ellipsis; -webkit-line-clamp:unset; }
   .reveal-quote.q-md{ font-size:clamp(15.5px,1.7vw,21px); }
   .reveal-quote.q-sm{ font-size:clamp(14px,1.4vw,17.5px); }
 
@@ -249,10 +281,16 @@
     margin:0; font-size:clamp(11.5px,1.2vw,13px); letter-spacing:.05em;
     text-transform:uppercase; color:var(--brass);
   }
-
-  .author-line{
-    display:flex; flex-direction:row; align-items:center; justify-content:center; gap:12px; margin:0;
+  .author-text{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
   }
+  .author-role{
+    font-size:clamp(10px,.9vw,11.5px); color:var(--vellum-dim); letter-spacing:.02em;
+    opacity:0; transition:opacity 400ms ease 100ms;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:360px;
+  }
+  .author-role.is-loaded{ opacity:1; }
+
   .author-photo{
     width:clamp(60px,4.5vw,72px); height:clamp(60px,4.5vw,72px);
     border-radius:50%; object-fit:cover; object-position:center top;
@@ -262,7 +300,13 @@
   }
   .author-photo.is-loaded{ opacity:1; }
 
-  .reveal-again{ margin-top:6px; }
+  .reveal-again{ margin-top:4px; }
+  .pill-icon{
+    display:inline-block;
+    transform:rotate(-45deg);
+    font-size:.72em;
+    vertical-align:middle;
+  }
 </style>
 </head>
 <body>
@@ -342,48 +386,33 @@
       <button class="panel cookie-trigger" id="cookieBtn" type="button" hidden>
         <span class="cookie-stage" id="cookieStage">
           <span class="cookie-wrap">
-            <svg class="cookie-half cookie-half--l" viewBox="0 0 120 120" aria-hidden="true">
-              <defs>
-                <linearGradient id="cookieGradL" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#f6d9a0"/>
-                  <stop offset="0.55" stop-color="#dba84f"/>
-                  <stop offset="1" stop-color="#b5792a"/>
-                </linearGradient>
-              </defs>
-              <path d="M60,14 C82,14 100,30 102,52 C104,76 86,100 60,104 C36,108 16,90 14,64 C12,40 30,18 60,14 Z" fill="url(#cookieGradL)"/>
-              <path d="M26,48 C42,38 80,38 96,54" fill="none" stroke="#8a5a22" stroke-width="2.5" opacity="0.4" stroke-linecap="round"/>
-            </svg>
-            <svg class="cookie-half cookie-half--r" viewBox="0 0 120 120" aria-hidden="true">
-              <defs>
-                <linearGradient id="cookieGradR" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#f6d9a0"/>
-                  <stop offset="0.55" stop-color="#dba84f"/>
-                  <stop offset="1" stop-color="#b5792a"/>
-                </linearGradient>
-              </defs>
-              <path d="M60,14 C82,14 100,30 102,52 C104,76 86,100 60,104 C36,108 16,90 14,64 C12,40 30,18 60,14 Z" fill="url(#cookieGradR)"/>
-              <path d="M26,48 C42,38 80,38 96,54" fill="none" stroke="#8a5a22" stroke-width="2.5" opacity="0.4" stroke-linecap="round"/>
-            </svg>
+            <span class="pill-cap"></span>
+            <span class="pill-body"></span>
           </span>
           <span class="burst" aria-hidden="true">
             <span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span>
             <span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span>
           </span>
         </span>
-        <span class="cookie-label">Click to crack open your quote</span>
+        <span class="cookie-label"><span class="pill-icon">💊</span> Take your positive pill</span>
       </button>
 
       <div class="panel reveal" id="reveal" aria-live="polite" hidden>
         <span class="reveal-burst" aria-hidden="true">
           <span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span><span class="spark"></span>
         </span>
-        <span class="panel-eyebrow" id="revealEyebrow">✦ Today's fortune</span>
-        <p class="reveal-quote" id="quoteText"></p>
-        <div class="author-line">
+        <div class="reveal-photo-col">
           <img class="author-photo" id="authorPhoto" alt="" hidden>
-          <p class="reveal-author" id="quoteAuthor"></p>
         </div>
-        <button class="ghost-pill reveal-again" id="againBtn" type="button">🥠 Crack another</button>
+        <div class="reveal-text-col">
+          <span class="panel-eyebrow" id="revealEyebrow">✦ Today's fortune</span>
+          <p class="reveal-quote" id="quoteText"></p>
+          <div class="author-text">
+            <p class="reveal-author" id="quoteAuthor"></p>
+            <span class="author-role" id="authorRole"></span>
+          </div>
+          <button class="ghost-pill reveal-again" id="againBtn" type="button"><span class="pill-icon">💊</span> One more dose</button>
+        </div>
       </div>
 
     </div>
@@ -553,6 +582,7 @@
     quoteText: document.getElementById('quoteText'),
     quoteAuthor: document.getElementById('quoteAuthor'),
     authorPhoto: document.getElementById('authorPhoto'),
+    authorRole:  document.getElementById('authorRole'),
     againBtn: document.getElementById('againBtn')
   };
 
@@ -626,30 +656,31 @@
     });
   }
 
-  // ---- fetch author photo from Wikipedia ----
-  function fetchAuthorPhoto(name) {
-    // reset first
+  // ---- fetch author photo + role from Wikipedia (one REST call) ----
+  function fetchAuthorInfo(name) {
     el.authorPhoto.classList.remove('is-loaded');
     el.authorPhoto.hidden = true;
     el.authorPhoto.src = '';
+    el.authorRole.textContent = '';
+    el.authorRole.classList.remove('is-loaded');
 
-    // skip non-person sources
     if (/proverb|anonymous|unknown/i.test(name)) return;
 
-    var url = 'https://en.wikipedia.org/w/api.php?action=query&titles=' +
-      encodeURIComponent(name) +
-      '&prop=pageimages&format=json&pithumbsize=200&origin=*';
+    var url = 'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(name);
 
     fetch(url)
-      .then(function (r) { return r.json(); })
+      .then(function (r) {
+        if (!r.ok) throw new Error('not found');
+        return r.json();
+      })
       .then(function (data) {
-        var pages = data.query && data.query.pages;
-        if (!pages) return;
-        var page = Object.values(pages)[0];
-        if (page && page.thumbnail && page.thumbnail.source) {
+        if (data.description) {
+          el.authorRole.textContent = data.description;
+          el.authorRole.classList.add('is-loaded');
+        }
+        if (data.thumbnail && data.thumbnail.source) {
           el.authorPhoto.onload = function () {
             el.authorPhoto.hidden = false;
-            // small delay so the fade-in feels intentional rather than instant
             window.setTimeout(function () {
               el.authorPhoto.classList.add('is-loaded');
             }, 60);
@@ -657,7 +688,7 @@
           el.authorPhoto.onerror = function () {
             el.authorPhoto.hidden = true;
           };
-          el.authorPhoto.src = page.thumbnail.source;
+          el.authorPhoto.src = data.thumbnail.source;
         }
       })
       .catch(function () { /* fail silently */ });
@@ -687,7 +718,7 @@
       el.quoteAuthor.textContent = '\u2014 ' + quote.a;
       el.revealEyebrow.textContent = (pathMode === 'today') ? "✦ Today's fortune" : '✦ Just for you';
 
-      fetchAuthorPhoto(quote.a);
+      fetchAuthorInfo(quote.a);
 
       showPanel(el.reveal);
       focusPanel(el.reveal);
@@ -701,6 +732,8 @@
     el.authorPhoto.classList.remove('is-loaded');
     el.authorPhoto.hidden = true;
     el.authorPhoto.src = '';
+    el.authorRole.textContent = '';
+    el.authorRole.classList.remove('is-loaded');
     hidePanel(el.reveal);
     el.cookieStage.classList.remove('is-cracked');
     showPanel(el.cookieBtn);
