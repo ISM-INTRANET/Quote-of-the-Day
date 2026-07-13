@@ -727,6 +727,19 @@
     showPanel(el.cookieBtn);
     el.cookieBtn.focus({ preventScroll: true });
   });
+
+  // ---- auto-resize: report exact banner height to parent iframe ----
+  function reportHeight() {
+    try {
+      var banner = document.querySelector('.banner');
+      if (!banner) return;
+      var h = Math.ceil(banner.getBoundingClientRect().height || banner.offsetHeight);
+      if (h > 0) window.parent.postMessage({ type: 'qotdHeight', height: h }, '*');
+    } catch (e) {}
+  }
+  window.addEventListener('load', reportHeight);
+  window.addEventListener('resize', reportHeight);
+  reportHeight();
 })();
 </script>
 </body>
