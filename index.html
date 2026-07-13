@@ -156,15 +156,15 @@
     display:flex; flex-direction:column; align-items:center; gap:14px; padding:8px;
   }
   .cookie-trigger:hover .cookie-label{ color:var(--brass-bright); }
-  .cookie-trigger:hover .cookie-stage{ transform:rotate(45deg) scale(1.06); }
+  .cookie-trigger:hover .cookie-stage{ transform:rotate(45deg) scale(1.08); }
   .cookie-trigger:focus-visible{ outline:2px solid var(--brass-bright); outline-offset:8px; border-radius:16px; }
 
   .cookie-stage{
     position:relative;
-    width:clamp(88px,11vw,118px); height:clamp(38px,4.8vw,52px);
+    width:clamp(52px,6vw,68px); height:clamp(22px,2.6vw,30px);
     transform:rotate(45deg);
     transition:transform 220ms ease;
-    margin-bottom:clamp(30px,3.8vw,42px);
+    margin-bottom:clamp(16px,2vw,22px);
   }
   .cookie-stage:not(.is-cracked) .cookie-wrap{ animation:cookie-idle 2.6s ease-in-out infinite; }
   @keyframes cookie-idle{
@@ -235,8 +235,7 @@
   /* ---------- reveal ---------- */
   .reveal{
     position:relative;
-    display:flex; flex-direction:row; align-items:center; gap:18px;
-    width:100%;
+    display:flex; flex-direction:row; align-items:center; gap:10px;
   }
   .reveal::before{
     content:''; position:absolute; top:50%; left:50%;
@@ -265,7 +264,7 @@
   }
   .reveal-text-col{
     display:flex; flex-direction:column; align-items:center; gap:5px;
-    text-align:center; flex:1; min-width:0;
+    text-align:center; max-width:clamp(300px,50vw,520px);
   }
 
   .reveal-quote{
