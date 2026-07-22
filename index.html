@@ -1142,11 +1142,17 @@
   // ---- auto-resize: report exact banner height to parent iframe ----
   function reportHeight() {
     try {
+      var banner = document.querySelector('.banner');
+      if (!banner) return;
+      // temporarily lift overflow clip so scrollHeight reflects true content
+      var prevOverflow = banner.style.overflow;
+      banner.style.overflow = 'visible';
       var h = Math.ceil(Math.max(
-        document.body.scrollHeight || 0,
-        document.documentElement.scrollHeight || 0,
-        document.body.offsetHeight || 0
+        banner.scrollHeight || 0,
+        banner.offsetHeight || 0,
+        document.body.scrollHeight || 0
       ));
+      banner.style.overflow = prevOverflow;
       if (h > 0) window.parent.postMessage({ type: 'qotdHeight', height: h }, '*');
     } catch (e) {}
   }
