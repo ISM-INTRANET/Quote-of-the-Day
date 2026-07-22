@@ -34,9 +34,15 @@
     background: linear-gradient(125deg, var(--ink-base), var(--ink-deep) 75%);
   }
   @media (min-width:720px){ .banner{ aspect-ratio:1920/300; } }
-  @media (max-width:719px){ .banner{ min-height:260px; padding:32px 16px; } }
+  @media (max-width:719px){
+    .banner{
+      height:auto; min-height:0; padding:28px 16px;
+      overflow:visible; /* never clip content on mobile */
+      aspect-ratio:unset !important;
+    }
+  }
   @media (max-width:480px){
-    .banner{ min-height:0; padding:20px 12px; }
+    .banner{ padding:20px 12px; }
     .reveal{ flex-direction:column; gap:8px; }
     .reveal-photo-col{ align-self:center; padding-top:0; width:auto; }
     .reveal-text-col{ max-width:100%; }
@@ -1144,19 +1150,15 @@
     try {
       var banner = document.querySelector('.banner');
       if (!banner) return;
-      // temporarily lift overflow clip so scrollHeight reflects true content
-      var prevOverflow = banner.style.overflow;
-      banner.style.overflow = 'visible';
       var h = Math.ceil(Math.max(
+        banner.getBoundingClientRect().height || 0,
         banner.scrollHeight || 0,
-        banner.offsetHeight || 0,
         document.body.scrollHeight || 0
-      ));
-      banner.style.overflow = prevOverflow;
-      if (h > 0) window.parent.postMessage({ type: 'qotdHeight', height: h }, '*');
+      )) + 8; // small buffer so content never clips
+      if (h > 8) window.parent.postMessage({ type: 'qotdHeight', height: h }, '*');
     } catch (e) {}
   }
-  window.addEventListener('load', reportHeight);
+  window.addEventListener('load', function(){ reportHeight(); window.setTimeout(reportHeight, 300); window.setTimeout(reportHeight, 800); });
   window.addEventListener('resize', reportHeight);
   reportHeight();
 })();
